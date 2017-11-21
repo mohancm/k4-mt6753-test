@@ -346,6 +346,7 @@ static void __init request_standard_resources(void)
 
 	kernel_code.start   = virt_to_phys(_text);
 	kernel_code.end     = virt_to_phys(_etext - 1);
+
 	kernel_data.start   = virt_to_phys(_sdata);
 	kernel_data.end     = virt_to_phys(_end - 1);
 
@@ -398,7 +399,9 @@ void __init setup_arch(char **cmdline_p)
 	paging_init();
 	request_standard_resources();
 
+
 	efi_idmap_init();
+
 	early_ioremap_reset();
 
 	unflatten_device_tree();

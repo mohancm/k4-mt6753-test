@@ -85,3 +85,4 @@ config MMC_FFU
 	  This is an option to run firmware update on eMMC 5.0.
 	  Field firmware updates (FFU) enables features enhancment
 	  in the field.
+

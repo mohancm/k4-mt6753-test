@@ -21,6 +21,7 @@ KBUILD_DEFCONFIG := defconfig
 
 KBUILD_CFLAGS	+= -mgeneral-regs-only
 KBUILD_CFLAGS	+= -fno-pic
+
 ifeq ($(CONFIG_CPU_BIG_ENDIAN), y)
 KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
@@ -49,9 +50,11 @@ core-$(CONFIG_NET) += arch/arm64/net/
 core-$(CONFIG_KVM) += arch/arm64/kvm/
 core-$(CONFIG_XEN) += arch/arm64/xen/
 core-$(CONFIG_CRYPTO) += arch/arm64/crypto/
+
 # lenovo-sw zhouwl, for wm8281 begin
 core-y		+=arch/arm64/mach-mtk/
 # lenovo-sw zhouwl, for wm8281 end
+
 libs-y		:= arch/arm64/lib/ $(libs-y)
 libs-y		+= $(LIBGCC)
 libs-$(CONFIG_EFI_STUB) += drivers/firmware/efi/libstub/
@@ -89,6 +92,7 @@ dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts dtbs
 
 Image.gz-dtb: vmlinux scripts dtbs
+
 	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
 
 PHONY += vdso_install

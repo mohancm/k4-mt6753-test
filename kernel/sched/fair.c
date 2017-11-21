@@ -6009,18 +6009,21 @@ again:
 		 * entity, update_curr() will update its vruntime, otherwise
 		 * forget we've ever seen it.
 		 */
-		if (curr && curr->on_rq)
-			update_curr(cfs_rq);
-		else
-			curr = NULL;
+		if (curr) {
+			if (curr->on_rq)
+				update_curr(cfs_rq);
+			else
+				curr = NULL;
 
-		/*
-		 * This call to check_cfs_rq_runtime() will do the throttle and
-		 * dequeue its entity in the parent(s). Therefore the 'simple'
-		 * nr_running test will indeed be correct.
-		 */
-		if (unlikely(check_cfs_rq_runtime(cfs_rq)))
-			goto simple;
+			/*
+			 * This call to check_cfs_rq_runtime() will do the
+			 * throttle and dequeue its entity in the parent(s).
+			 * Therefore the 'simple' nr_running test will indeed
+			 * be correct.
+			 */
+			if (unlikely(check_cfs_rq_runtime(cfs_rq)))
+				goto simple;
+		}
 
 		se = pick_next_entity(cfs_rq, curr);
 		cfs_rq = group_cfs_rq(se);
@@ -6318,8 +6321,6 @@ struct lb_env {
 	int			mt_ignore_cachehot_in_idle;
 #endif
 };
-
-static DEFINE_PER_CPU(bool, dbs_boost_needed);
 
 #ifdef CONFIG_SCHED_HMP
 /*
@@ -6681,8 +6682,6 @@ static void detach_task(struct task_struct *p, struct lb_env *env)
 	deactivate_task(env->src_rq, p, 0);
 	p->on_rq = TASK_ON_RQ_MIGRATING;
 	set_task_cpu(p, env->dst_cpu);
-
-    per_cpu(dbs_boost_needed, env->dst_cpu) = true;
 }
 
 /*
@@ -7217,8 +7216,11 @@ static void update_cfs_rq_h_load(struct cfs_rq *cfs_rq)
 {
 	struct rq *rq = rq_of(cfs_rq);
 	struct sched_entity *se = cfs_rq->tg->se[cpu_of(rq)];
-	unsigned long now = jiffies;
+	u64 now = sched_clock_cpu(cpu_of(rq));
 	unsigned long load;
+
+	/* sched: change to jiffies */
+	now = now * HZ >> 30;
 
 	if (cfs_rq->last_h_load_update == now)
 		return;
@@ -8586,20 +8588,8 @@ more_balance:
 			 */
 			sd->nr_balance_failed = sd->cache_nice_tries+1;
 		}
-	} else {
+	} else
 		sd->nr_balance_failed = 0;
-        if (per_cpu(dbs_boost_needed, this_cpu)) {
-            struct migration_notify_data mnd;
-
-            mnd.src_cpu = cpu_of(busiest);
-            mnd.dest_cpu = this_cpu;
-            mnd.load = 0;
-            atomic_notifier_call_chain(&migration_notifier_head, 
-                                        0, (void *)&mnd);
-            per_cpu(dbs_boost_needed, this_cpu) = false;
-        }
-
-    }
 
 	if (likely(!active_balance)) {
 		/* We were unbalanced, so reset the balancing interval */
@@ -8869,19 +8859,6 @@ out_unlock:
 		attach_one_task(target_rq, p);
 
 	local_irq_enable();
-
-    if (per_cpu(dbs_boost_needed, target_cpu)) {
-        struct migration_notify_data mnd;
-
-        mnd.src_cpu = cpu_of(busiest_rq);
-        mnd.dest_cpu = target_cpu;
-        mnd.load = 0;
-
-        atomic_notifier_call_chain(&migration_notifier_head, 0, (void *)&mnd);
-
-        per_cpu(dbs_boost_needed, target_cpu) = false;
-    }
-
 
 	return 0;
 }

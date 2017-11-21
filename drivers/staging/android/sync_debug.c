@@ -29,15 +29,6 @@
 
 #ifdef CONFIG_DEBUG_FS
 
-/**
- * Reduce debug information. To enable more information please define
- * SYNC_DEBUG
- *
- * [MTK] {{{
- * #define SYNC_DEBUG
- * [MTK] }}}
- */
-
 static LIST_HEAD(sync_timeline_list_head);
 static DEFINE_SPINLOCK(sync_timeline_list_lock);
 static LIST_HEAD(sync_fence_list_head);
@@ -79,9 +70,6 @@ void sync_fence_debug_remove(struct sync_fence *fence)
 	spin_unlock_irqrestore(&sync_fence_list_lock, flags);
 }
 
-/* [MTK] {{{ */
-#ifdef SYNC_DEBUG
-/* [MTK] }}} */
 static const char *sync_status_str(int status)
 {
 	if (status == 0)
@@ -183,15 +171,9 @@ static void sync_print_fence(struct seq_file *s, struct sync_fence *fence)
 	}
 	spin_unlock_irqrestore(&fence->wq.lock, flags);
 }
-/* [MTK] {{{ */
-#endif /* SYNC_DEBUG */
-/* [MTK] }}} */
 
 static int sync_debugfs_show(struct seq_file *s, void *unused)
 {
-/* [MTK] {{{ */
-#ifdef SYNC_DEBUG
-/* [MTK] }}} */
 	unsigned long flags;
 	struct list_head *pos;
 
@@ -219,9 +201,6 @@ static int sync_debugfs_show(struct seq_file *s, void *unused)
 		seq_puts(s, "\n");
 	}
 	spin_unlock_irqrestore(&sync_fence_list_lock, flags);
-/* [MTK] {{{ */
-#endif
-/* [MTK] }}} */
 	return 0;
 }
 

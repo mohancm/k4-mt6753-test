@@ -846,7 +846,6 @@ balanced:
 			u64 rt_time_pre;
 
 			rt_time_pre = rt_rq->rt_time;
-			//rt_rq->rt_time = 0;
 			rt_rq->rt_throttled = 0;
 			printk_deferred("sched: disable_runtime: RT throttling inactivated, cpu=%d\n",
 				rq->cpu);

@@ -98,6 +98,7 @@ static int calc_pll_freq_cfg(
 	pr_debug("freq: %u\n", freq);
 #endif
 
+
 	/* search suitable postdiv */
 	for (idx = *postdiv_idx;
 		idx < ARRAY_SIZE(postdiv) && postdiv[idx] * freq <= freq_min;
@@ -278,6 +279,7 @@ static unsigned long clk_sdm_pll_recalc_rate(
 	pr_debug("[CCF] %s: %lu: %s\n", __func__, r, __clk_get_name(hw->clk));
 #endif
 
+
 	return r;
 }
 
@@ -345,6 +347,7 @@ static int clk_sdm_pll_set_rate(
 		__func__, __clk_get_name(hw->clk), rate, pcw, postdiv_idx);
 #endif
 
+
 	if (r == 0)
 		clk_sdm_pll_set_rate_regs(hw, pcw, postdiv_idx);
 
@@ -394,6 +397,7 @@ static unsigned long clk_arm_pll_recalc_rate(
 #if MT_CCF_DEBUG
 	pr_debug("[CCF] %s: %lu: %s\n", __func__, r, __clk_get_name(hw->clk));
 #endif
+
 
 	return r;
 }
@@ -462,6 +466,7 @@ static int clk_arm_pll_set_rate(
 		__func__, __clk_get_name(hw->clk), rate, pcw, postdiv_idx);
 #endif
 
+
 	if (r == 0)
 		clk_arm_pll_set_rate_regs(hw, pcw, postdiv_idx);
 
@@ -487,13 +492,12 @@ static long clk_mm_pll_round_rate(
 	u32 postdiv = 0;
 	u32 r;
 
-#if MT_CCF_DEBUG
-	pr_debug("[CCF] %s: %s: rate: %lu\n", __func__,
-		 __clk_get_name(hw->clk), rate);
-#endif
+
 #if MT_CCF_BRINGUP
+	pr_debug("[CCF] %s: %s: S\n", __func__, __clk_get_name(hw->clk));
 	return 0;
 #endif /* MT_CCF_BRINGUP */
+	pr_debug("%s, rate: %lu\n", __clk_get_name(hw->clk), rate);
 
 	if (rate <= 702000000)
 		postdiv = 2;
@@ -528,10 +532,9 @@ static int clk_mm_pll_set_rate(
 	parent_rate = parent_rate ? parent_rate : 26000000;
 	r = calc_pll_freq_cfg(&pcw, &postdiv_idx, rate, parent_rate, pcwfbits);
 
-#if MT_CCF_DEBUG
+
 	pr_debug("%s, rate: %lu, pcw: %u, postdiv_idx: %u\n",
 		__clk_get_name(hw->clk), rate, pcw, postdiv_idx);
-#endif
 
 	if (r == 0)
 		clk_arm_pll_set_rate_regs(hw, pcw, postdiv_idx);
@@ -554,12 +557,14 @@ static int clk_univ_pll_enable(struct clk_hw *hw)
 	struct mtk_clk_pll *pll = to_mtk_clk_pll(hw);
 	u32 r;
 
+
 #if MT_CCF_DEBUG
 	pr_debug("[CCF] %s: %s: S\n", __func__, __clk_get_name(hw->clk));
 #endif
 #if MT_CCF_BRINGUP
 	return 0;
 #endif /* MT_CCF_BRINGUP */
+
 
 	mtk_clk_lock(flags);
 
@@ -588,10 +593,12 @@ static void clk_univ_pll_disable(struct clk_hw *hw)
 	pr_debug("[CCF] %s: %s: S\n", __func__, __clk_get_name(hw->clk));
 	return;
 #endif /* MT_CCF_BRINGUP */
+
 #if MT_CCF_DEBUG
 	pr_debug("%s: PLL_AO: %d\n",
 		__clk_get_name(hw->clk), !!(pll->flags & PLL_AO));
 #endif
+
 
 	if (pll->flags & PLL_AO)
 		return;
@@ -640,9 +647,11 @@ static unsigned long clk_univ_pll_recalc_rate(
 	vco_freq = parent_rate * fbkdiv;
 	r = (vco_freq + pll_posdiv_map[posdiv] - 1) / pll_posdiv_map[posdiv];
 
+
 #if MT_CCF_DEBUG
 	pr_debug("%lu: %s\n", r, __clk_get_name(hw->clk));
 #endif
+
 
 	return r;
 }
@@ -704,6 +713,7 @@ static long clk_univ_pll_round_rate(
 	return 0;
 #endif /* MT_CCF_BRINGUP */
 
+
 	*prate = *prate ? *prate : 26000000;
 	rate = freq_limit(rate);
 	calc_pll_freq_cfg(&pcw, &postdiv, rate, *prate, pcwfbits);
@@ -736,6 +746,7 @@ static int clk_univ_pll_set_rate(
 		__clk_get_name(hw->clk), rate, pcw, postdiv_idx);
 #endif
 
+
 	if (r == 0)
 		clk_univ_pll_set_rate_regs(hw, pcw, postdiv_idx);
 
@@ -763,6 +774,7 @@ static int clk_aud_pll_enable(struct clk_hw *hw)
 #if MT_CCF_BRINGUP
 	return 0;
 #endif /* MT_CCF_BRINGUP */
+
 
 	mtk_clk_lock(flags);
 
@@ -808,6 +820,7 @@ static void clk_aud_pll_disable(struct clk_hw *hw)
 	pr_debug("%s: PLL_AO: %d\n",
 		__clk_get_name(hw->clk), !!(pll->flags & PLL_AO));
 #endif
+
 
 	if (pll->flags & PLL_AO)
 		return;
@@ -869,6 +882,7 @@ static unsigned long clk_aud_pll_recalc_rate(
 #if MT_CCF_DEBUG
 	pr_debug("%lu: %s\n", r, __clk_get_name(hw->clk));
 #endif
+
 
 	return r;
 }
@@ -935,6 +949,7 @@ static long clk_aud_pll_round_rate(
 	return 0;
 #endif /* MT_CCF_BRINGUP */
 
+
 	*prate = *prate ? *prate : 26000000;
 	rate = freq_limit(rate);
 	calc_pll_freq_cfg(&pcw, &postdiv, rate, *prate, pcwfbits);
@@ -967,6 +982,7 @@ static int clk_aud_pll_set_rate(
 	pr_debug("%s, rate: %lu, pcw: %u, postdiv_idx: %u\n",
 		__clk_get_name(hw->clk), rate, pcw, postdiv_idx);
 #endif
+
 
 	if (r == 0)
 		clk_aud_pll_set_rate_regs(hw, pcw, postdiv_idx);
